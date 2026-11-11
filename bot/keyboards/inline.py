@@ -53,3 +53,14 @@ def get_confirmation_inline_keyboard() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="❌ Bekor qilish", callback_data="cancel_reg")
     )
     return builder.as_markup()
+
+def get_location_inline_keyboard() -> InlineKeyboardMarkup:
+    """Builds inline keyboard with Google Maps link."""
+    builder = InlineKeyboardBuilder()
+    builder.row(
+        InlineKeyboardButton(
+            text="🗺 Google Maps orqali ochish",
+            url="https://maps.app.goo.gl/2Yo3yHZZzHc8w79v7"
+        )
+    )
+    return builder.as_markup()

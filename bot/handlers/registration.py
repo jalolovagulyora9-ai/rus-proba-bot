@@ -31,6 +31,7 @@ from bot.keyboards import (
     get_regions_inline_keyboard,
     get_districts_inline_keyboard,
     get_confirmation_inline_keyboard,
+    get_location_inline_keyboard,
 )
 from core.services.validator import (
     validate_full_name,
@@ -166,13 +167,31 @@ async def process_phone_number(message: Message, state: FSMContext):
         )
         return
 
-    await state.update_data(phone_number=cleaned_phone)
-    await state.set_state(RegistrationStates.region)
+    await state.update_data(
+        phone_number=cleaned_phone,
+        region="Farg'ona",
+        district="Mirzo Ulug'bek maktabi",
+        school_number="Mirzo Ulug'bek maktabi"
+    )
+    await state.set_state(RegistrationStates.confirm)
+
+    data = await state.get_data()
+    display_name = data.get('full_name', '')
+
+    card = (
+        f"📋 <b>Kiritilgan ma'lumotlarni tekshiring:</b>\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n"
+        f"👤 <b>F.I.Sh:</b> {display_name}\n"
+        f"📱 <b>Telefon raqam:</b> {cleaned_phone}\n"
+        f"🏫 <b>Imtihon joyi:</b> Mirzo Ulug'bek xususiy maktabi\n"
+        f"📅 <b>Imtihon kuni:</b> 15-noyabr\n"
+        f"━━━━━━━━━━━━━━━━━━━━\n\n"
+        f"<i>Ma'lumotlar to'g'ri bo'lsa, <b>«✅ Ma'lumotlarni tasdiqlash»</b> tugmasini bosing:</i>"
+    )
 
     await message.answer(
-        "<b>3-bosqich:</b> Qaysi viloyat / hududdansiz?\n\n"
-        "Quyidagi ro'yxatdan viloyatingiz yoki shahringizni tanlang:",
-        reply_markup=get_regions_inline_keyboard()
+        card,
+        reply_markup=get_confirmation_inline_keyboard()
     )
 
 
@@ -384,4 +403,16 @@ async def execute_registration(callback: CallbackQuery, state: FSMContext):
     await callback.message.answer(
         success_message,
         reply_markup=get_main_menu_keyboard(is_registered=True)
+    )
+
+    # Immediately send the exact exam location pin and Google Maps navigation
+    await callback.message.answer_location(
+        latitude=40.619075,
+        longitude=70.982239
+    )
+    await callback.message.answer(
+        "📍 <b>Imtihon o'tkaziladigan joy:</b> Mirzo Ulug'bek xususiy maktabi\n"
+        "📅 <b>Imtihon kuni:</b> 15-noyabr\n\n"
+        "Xaritani ochish va marshrut chizish uchun:",
+        reply_markup=get_location_inline_keyboard()
     )

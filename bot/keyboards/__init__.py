@@ -9,6 +9,7 @@ from bot.keyboards.inline import (
     get_regions_inline_keyboard,
     get_districts_inline_keyboard,
     get_confirmation_inline_keyboard,
+    get_location_inline_keyboard,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     'get_regions_inline_keyboard',
     'get_districts_inline_keyboard',
     'get_confirmation_inline_keyboard',
+    'get_location_inline_keyboard',
 ]

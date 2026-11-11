@@ -36,8 +36,22 @@ class ExamConfig(models.Model):
     )
     exam_location = models.CharField(
         max_length=255,
+        default="Mirzo Ulug'bek xususiy maktabi",
         blank=True,
         verbose_name="Imtihon manzili"
+    )
+    exam_latitude = models.FloatField(
+        default=40.619075,
+        verbose_name="Kenglik (Latitude)"
+    )
+    exam_longitude = models.FloatField(
+        default=70.982239,
+        verbose_name="Uzunlik (Longitude)"
+    )
+    exam_maps_url = models.URLField(
+        default="https://maps.app.goo.gl/2Yo3yHZZzHc8w79v7",
+        blank=True,
+        verbose_name="Xarita havolasi"
     )
     info_text = models.TextField(
         blank=True,
@@ -105,14 +119,19 @@ class Participant(models.Model):
     school_number = models.CharField(
         max_length=100,
         default="",
+        blank=True,
         verbose_name="Maktab nomeri / nomi"
     )
     region = models.CharField(
         max_length=100,
+        default="Farg'ona",
+        blank=True,
         verbose_name="Viloyat"
     )
     district = models.CharField(
         max_length=100,
+        default="Mirzo Ulug'bek maktabi",
+        blank=True,
         verbose_name="Tuman / Shahar"
     )
     reg_number = models.CharField(

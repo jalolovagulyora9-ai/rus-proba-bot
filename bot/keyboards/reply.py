@@ -7,13 +7,13 @@ def get_main_menu_keyboard(is_registered: bool = False) -> ReplyKeyboardMarkup:
     """Returns the persistent main menu reply keyboard."""
     if is_registered:
         keyboard = [
-            [KeyboardButton(text="🎫 Mening ro'yxat raqamim")],
-            [KeyboardButton(text="ℹ️ Ma'lumot / Yo'riqnoma")]
+            [KeyboardButton(text="🎫 Mening chiptam"), KeyboardButton(text="📍 Imtihon lokatsiyasi")],
+            [KeyboardButton(text="ℹ️ Imtihon qoidalari")]
         ]
     else:
         keyboard = [
             [KeyboardButton(text="📝 Ro'yxatdan o'tish")],
-            [KeyboardButton(text="ℹ️ Ma'lumot / Yo'riqnoma")]
+            [KeyboardButton(text="📍 Imtihon lokatsiyasi"), KeyboardButton(text="ℹ️ Imtihon haqida")]
         ]
     return ReplyKeyboardMarkup(keyboard=keyboard, resize_keyboard=True)
 

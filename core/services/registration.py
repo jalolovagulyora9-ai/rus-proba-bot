@@ -36,11 +36,11 @@ class AlreadyRegisteredError(RegistrationError):
 def register_participant_sync(
     telegram_id: int,
     phone_number: str,
-    region: str,
-    district: str,
+    region: str = "Farg'ona",
+    district: str = "Mirzo Ulug'bek maktabi",
     first_name: str = None,
     last_name: str = None,
-    school_number: str = "Ko'rsatilmadi",
+    school_number: str = "",
     full_name: str = None,
     username: str = None
 ) -> Participant:
@@ -60,10 +60,9 @@ def register_participant_sync(
         raise ValidationError("Ism va familiya ko'rsatilishi shart.")
 
     cleaned_phone = normalize_uzbek_phone(phone_number)
-    cleaned_school = validate_school_number(school_number)
-
-    if not region or not district:
-        raise RegistrationError("Viloyat va tuman ko'rsatilishi shart.")
+    cleaned_school = validate_school_number(school_number) if school_number else ""
+    cleaned_region = region.strip() if region else "Farg'ona"
+    cleaned_district = district.strip() if district else "Mirzo Ulug'bek maktabi"
 
     # 2. Acquire exclusive lock on ExamConfig row
     config = ExamConfig.objects.select_for_update().first()
@@ -120,8 +119,8 @@ def register_participant_sync(
             last_name=cleaned_last,
             phone_number=cleaned_phone,
             school_number=cleaned_school,
-            region=region.strip(),
-            district=district.strip(),
+            region=cleaned_region,
+            district=cleaned_district,
             reg_number=reg_number
         )
         return participant

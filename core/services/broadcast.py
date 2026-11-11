@@ -16,18 +16,22 @@ async def broadcast_message_async(
     message_text: str,
     target_region: str | None = None,
     delay_between_messages: float = 0.05,
-    dry_run: bool = False
+    dry_run: bool = False,
+    participants: list | None = None
 ) -> dict:
     """
     Sends a broadcast message to participants asynchronously.
     Updates bot_blocked flag if a participant blocked the bot.
     Logs broadcast metrics into BroadcastLog model.
     """
-    qs = Participant.objects.filter(bot_blocked=False)
-    if target_region:
-        qs = qs.filter(region=target_region)
+    if participants is None:
+        qs = Participant.objects.filter(bot_blocked=False)
+        if target_region:
+            qs = qs.filter(region=target_region)
+        participants = list(qs)
+    else:
+        participants = [p for p in participants if not getattr(p, 'bot_blocked', False)]
 
-    participants = list(qs)
     total_recipients = len(participants)
 
     if dry_run or total_recipients == 0:

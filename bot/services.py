@@ -82,8 +82,8 @@ def format_participant_ticket(participant: Participant, exam_info: dict | None =
     """
     Formats participant information into a clean, professional HTML ticket card.
     """
-    exam_date_str = "Tez orada e'lon qilinadi"
-    location_str = "Toshkent shahri (aniq manzil e'lon qilinadi)"
+    exam_date_str = "15-noyabr"
+    location_str = "Mirzo Ulug'bek xususiy maktabi"
 
     if exam_info:
         if exam_info.get("exam_date"):
@@ -94,14 +94,11 @@ def format_participant_ticket(participant: Participant, exam_info: dict | None =
     ticket = (
         f"🎫 <b>RASMIY ISHTIROKCHI CHIPTASI</b>\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"🆔 <b>Ro'yxat raqami:</b> <code>{participant.reg_number}</code>\n"
+        f"🆔 <b>Chipta raqami:</b> <code>{participant.reg_number}</code>\n"
         f"👤 <b>F.I.Sh:</b> {participant.full_name}\n"
         f"📱 <b>Telefon:</b> {participant.phone_number}\n"
-        f"🏫 <b>Ta'lim muassasasi:</b> {participant.school_number}\n"
-        f"📍 <b>Hudud:</b> {participant.region}, {participant.district}\n"
-        f"━━━━━━━━━━━━━━━━━━━━\n"
-        f"📅 <b>Imtihon vaqti:</b> {exam_date_str}\n"
-        f"🏢 <b>Manzil:</b> {location_str}\n"
+        f"📅 <b>Imtihon sanasi:</b> {exam_date_str}\n"
+        f"🏫 <b>O'tkazilish joyi:</b> {location_str}\n"
         f"━━━━━━━━━━━━━━━━━━━━\n"
         f"⚠️ <i>Imtihonga kelganda ushbu <b>{participant.reg_number}</b> raqamingiz va "
         f"shaxsni tasdiqlovchi hujjat (pasport / ID karta / guvohnoma) ko'rsatilishi shart!</i>"

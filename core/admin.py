@@ -34,8 +34,8 @@ class ExamConfigAdmin(admin.ModelAdmin):
             "description": "Ro'yxatdan o'tish holati va ishtirokchilar maksimal o'rinlar soni."
         }),
         ("Muddatlar va Joylashuv", {
-            "fields": ("start_date", "end_date", "exam_date", "exam_location"),
-            "description": "7 kunlik ro'yxatga olish oynasi va imtihon o'tkaziladigan sana/manzil."
+            "fields": ("start_date", "end_date", "exam_date", "exam_location", "exam_latitude", "exam_longitude", "exam_maps_url"),
+            "description": "Imtihon o'tkaziladigan sana, manzil, GPS koordinatalar va xarita havolasi."
         }),
         ("Qo'shimcha Xabar", {
             "fields": ("info_text",),
@@ -101,7 +101,7 @@ class ParticipantAdmin(admin.ModelAdmin):
         'telegram_username'
     )
     readonly_fields = ('reg_number', 'telegram_id', 'telegram_username', 'created_at')
-    actions = ['export_as_excel', 'mark_attended', 'mark_not_attended']
+    actions = ['export_as_excel', 'send_reminder_2_days', 'send_reminder_1_day', 'mark_attended', 'mark_not_attended']
 
     fieldsets = (
         ("Ishtirokchi Ma'lumotlari", {
@@ -118,6 +118,42 @@ class ParticipantAdmin(admin.ModelAdmin):
             "classes": ("collapse",)
         }),
     )
+
+    @admin.action(description="📢 Tanlanganlarga 'Imtihonga 2 kun qoldi' eslatmasini yuborish")
+    def send_reminder_2_days(self, request, queryset):
+        import asyncio
+        from core.services.broadcast import broadcast_message_async
+        msg = (
+            "📢 <b>DIQQAT! SINOV IMTIHONIGA 2 KUN QOLDI!</b>\n\n"
+            "Hurmatli ishtirokchi!\n"
+            "<b>15-noyabr</b> kuni <b>Mirzo Ulug'bek xususiy maktabida</b> Rus tili va adabiyotidan Milliy sertifikat sinov imtihoni bo'lib o'tadi.\n\n"
+            "📍 <b>Manzil:</b> Mirzo Ulug'bek xususiy maktabi\n"
+            "🗺 <b>Lokatsiya:</b> https://maps.app.goo.gl/2Yo3yHZZzHc8w79v7\n\n"
+            "Iltimos, o'z vaqtida kelishingizni va o'zingiz bilan shaxsingizni tasdiqlovchi hujjat (pasport/ID karta) hamda ruchka olishingizni so'raymiz."
+        )
+        try:
+            res = asyncio.run(broadcast_message_async(message_text=msg, participants=list(queryset)))
+            self.message_user(request, f"Eslatma {res['sent_count']} nafar ishtirokchiga muvaffaqiyatli yuborildi!", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"Xatolik yuz berdi: {e}", messages.ERROR)
+
+    @admin.action(description="⏳ Tanlanganlarga 'Imtihonga 1 kun qoldi' eslatmasini yuborish")
+    def send_reminder_1_day(self, request, queryset):
+        import asyncio
+        from core.services.broadcast import broadcast_message_async
+        msg = (
+            "⏳ <b>ESLATMA! IMTIHON ERTAGA BO'LIB O'TADI!</b>\n\n"
+            "Hurmatli ishtirokchi!\n"
+            "Ertaga, <b>15-noyabr</b> kuni <b>Mirzo Ulug'bek xususiy maktabida</b> Rus tili va adabiyotidan Milliy sertifikat sinov imtihoni o'tkaziladi.\n\n"
+            "📍 <b>Manzil:</b> Mirzo Ulug'bek xususiy maktabi\n"
+            "🗺 <b>Lokatsiya:</b> https://maps.app.goo.gl/2Yo3yHZZzHc8w79v7\n\n"
+            "Imtihonda barchangizga omad va yuqori natijalar tilaymiz!"
+        )
+        try:
+            res = asyncio.run(broadcast_message_async(message_text=msg, participants=list(queryset)))
+            self.message_user(request, f"Eslatma {res['sent_count']} nafar ishtirokchiga muvaffaqiyatli yuborildi!", messages.SUCCESS)
+        except Exception as e:
+            self.message_user(request, f"Xatolik yuz berdi: {e}", messages.ERROR)
 
     @admin.action(description="Tanlangan ishtirokchilarni Excel formatida yuklab olish")
     def export_as_excel(self, request, queryset):

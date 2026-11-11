@@ -126,7 +126,7 @@ class BotKeyboardsTestCase(SimpleTestCase):
         self.assertEqual(kb_unregistered.keyboard[0][0].text, "📝 Ro'yxatdan o'tish")
 
         kb_registered = get_main_menu_keyboard(is_registered=True)
-        self.assertEqual(kb_registered.keyboard[0][0].text, "🎫 Mening ro'yxat raqamim")
+        self.assertEqual(kb_registered.keyboard[0][0].text, "🎫 Mening chiptam")
 
         phone_kb = get_phone_keyboard()
         self.assertTrue(phone_kb.keyboard[0][0].request_contact)
@@ -161,17 +161,17 @@ class BotTicketFormattingTestCase(SimpleTestCase):
             first_name="Madina",
             last_name="Alimova",
             phone_number="+998931112233",
-            school_number="1-son IDUM",
-            region="Samarqand viloyati",
-            district="Samarqand shahri",
+            school_number="Mirzo Ulug'bek xususiy maktabi",
+            region="Farg'ona",
+            district="Mirzo Ulug'bek maktabi",
             reg_number="RU-0042"
         )
         ticket = format_participant_ticket(p)
         self.assertIn("RU-0042", ticket)
         self.assertIn("Madina Alimova", ticket)
         self.assertIn("+998931112233", ticket)
-        self.assertIn("1-son IDUM", ticket)
-        self.assertIn("Samarqand viloyati, Samarqand shahri", ticket)
+        self.assertIn("15-noyabr", ticket)
+        self.assertIn("Mirzo Ulug'bek xususiy maktabi", ticket)
 
 
 class BotFSMHandlersTestCase(SimpleTestCase):
@@ -194,15 +194,20 @@ class BotFSMHandlersTestCase(SimpleTestCase):
         message.from_user.id = 10101
         message.from_user.full_name = "Test User"
         message.answer = AsyncMock()
+        message.answer_photo = AsyncMock()
         state = MockFSMContext()
 
         with patch('bot.handlers.common.get_participant_by_telegram_id', new_callable=AsyncMock, return_value=None), \
              patch('bot.handlers.common.get_exam_status', new_callable=AsyncMock, return_value=self.mock_exam_open):
             run_coro_sync(cmd_start(message, state))
 
-        self.assertEqual(message.answer.call_count, 2)
-        args, kwargs = message.answer.call_args_list[0]
-        self.assertIn("xush kelibsiz", args[0])
+        # Checks that promo banner/caption was sent
+        if message.answer_photo.called:
+            caption = message.answer_photo.call_args[1].get('caption', '')
+            self.assertIn("Jalolov Asrorjon", caption)
+        else:
+            args, kwargs = message.answer.call_args_list[0]
+            self.assertIn("Jalolov Asrorjon", args[0])
 
     def test_cmd_start_registered(self):
         dummy_participant = Participant(
@@ -249,7 +254,7 @@ class BotFSMHandlersTestCase(SimpleTestCase):
         callback.answer = AsyncMock()
         callback.message.delete = AsyncMock()
         callback.message.answer = AsyncMock()
-        state = MockFSMContext(current_state=RegistrationStates.region)
+        state = MockFSMContext(current_state=RegistrationStates.confirm)
 
         with patch('bot.handlers.common.get_participant_by_telegram_id', new_callable=AsyncMock, return_value=None):
             run_coro_sync(cb_cancel_reg(callback, state))
@@ -277,8 +282,8 @@ class BotFSMHandlersTestCase(SimpleTestCase):
              patch('bot.handlers.common.get_exam_status', new_callable=AsyncMock, return_value=self.mock_exam_open):
             run_coro_sync(cmd_my_id(message))
 
-        message.answer.assert_called_once()
-        self.assertIn("RU-0015", message.answer.call_args[0][0])
+        self.assertGreaterEqual(message.answer.call_count, 1)
+        self.assertIn("RU-0015", message.answer.call_args_list[0][0][0])
 
     def test_cmd_help(self):
         message = MagicMock()
@@ -290,7 +295,7 @@ class BotFSMHandlersTestCase(SimpleTestCase):
             run_coro_sync(cmd_help(message))
 
         message.answer.assert_called_once()
-        self.assertIn("YO'RIQNOMA", message.answer.call_args[0][0])
+        self.assertIn("Jalolov Asrorjon", message.answer.call_args[0][0])
 
     def test_full_fsm_registration_flow(self):
         user_id = 60606
@@ -324,68 +329,26 @@ class BotFSMHandlersTestCase(SimpleTestCase):
         self.assertEqual(data["first_name"], "Botir")
         self.assertEqual(data["last_name"], "Zokirov")
 
-        # 3. Step 2: Phone number via contact
+        # 3. Step 2: Phone number via contact -> moves directly to confirm!
         msg_ph = MagicMock()
         msg_ph.contact = MagicMock()
         msg_ph.contact.phone_number = "998909876543"
         msg_ph.text = None
         msg_ph.answer = AsyncMock()
         run_coro_sync(process_phone_number(msg_ph, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.region.state)
+        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.confirm.state)
         data = run_coro_sync(state.get_data())
         self.assertEqual(data["phone_number"], "+998909876543")
 
-        # 4. Step 3: Region selection callback
-        cb_reg = MagicMock()
-        cb_reg.data = "reg:0"  # Toshkent shahri
-        cb_reg.answer = AsyncMock()
-        cb_reg.message.edit_text = AsyncMock()
-        run_coro_sync(process_region_selection(cb_reg, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.district.state)
-        data = run_coro_sync(state.get_data())
-        self.assertEqual(data["region"], "Toshkent shahri")
-
-        # Back to region button test
-        cb_back = MagicMock()
-        cb_back.data = "back_to_regions"
-        cb_back.answer = AsyncMock()
-        cb_back.message.edit_text = AsyncMock()
-        run_coro_sync(back_to_regions(cb_back, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.region.state)
-
-        # Re-select region
-        run_coro_sync(process_region_selection(cb_reg, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.district.state)
-
-        # 5. Step 4: District selection callback -> moves to school_number
-        cb_dist = MagicMock()
-        cb_dist.data = "dist:1"  # Chilonzor tumani
-        cb_dist.answer = AsyncMock()
-        cb_dist.message.delete = AsyncMock()
-        cb_dist.message.answer = AsyncMock()
-        run_coro_sync(process_district_selection(cb_dist, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.school_number.state)
-        data = run_coro_sync(state.get_data())
-        self.assertEqual(data["district"], "Chilonzor tumani")
-
-        # 6. Step 5: School number
-        msg_sc = MagicMock()
-        msg_sc.text = "14-maktab"
-        msg_sc.answer = AsyncMock()
-        run_coro_sync(process_school_number(msg_sc, state))
-        self.assertEqual(run_coro_sync(state.get_state()), RegistrationStates.confirm.state)
-        data = run_coro_sync(state.get_data())
-        self.assertEqual(data["school_number"], "14-maktab")
-
-        # 7. Step 6: Confirm registration callback
+        # 4. Step 3: Confirm registration callback
         dummy_registered = Participant(
             telegram_id=user_id,
             first_name="Botir",
             last_name="Zokirov",
             phone_number="+998909876543",
-            school_number="14-maktab",
-            region="Toshkent shahri",
-            district="Chilonzor tumani",
+            school_number="Mirzo Ulug'bek maktabi",
+            region="Farg'ona",
+            district="Mirzo Ulug'bek maktabi",
             reg_number="RU-0007"
         )
         cb_conf = MagicMock()
@@ -394,15 +357,17 @@ class BotFSMHandlersTestCase(SimpleTestCase):
         cb_conf.answer = AsyncMock()
         cb_conf.message.delete = AsyncMock()
         cb_conf.message.answer = AsyncMock()
+        cb_conf.message.answer_location = AsyncMock()
 
         with patch('bot.handlers.registration.register_participant_async', new_callable=AsyncMock, return_value=dummy_registered), \
              patch('bot.handlers.registration.get_exam_status', new_callable=AsyncMock, return_value=self.mock_exam_open):
             run_coro_sync(execute_registration(cb_conf, state))
 
         self.assertIsNone(run_coro_sync(state.get_state()))
-        cb_conf.message.answer.assert_called_once()
-        self.assertIn("RU-0007", cb_conf.message.answer.call_args[0][0])
-        self.assertIn("TABRIKLAYMIZ", cb_conf.message.answer.call_args[0][0])
+        self.assertGreaterEqual(cb_conf.message.answer.call_count, 1)
+        self.assertIn("RU-0007", cb_conf.message.answer.call_args_list[0][0][0])
+        self.assertIn("TABRIKLAYMIZ", cb_conf.message.answer.call_args_list[0][0][0])
+        cb_conf.message.answer_location.assert_called_once()
 
     def test_registration_duplicate_rejection(self):
         user_id = 70707
