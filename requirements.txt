@@ -1,0 +1,17 @@
+# Core Frameworks
+Django>=5.1.0,<5.2.0
+aiogram>=3.14.0,<4.0.0
+asgiref>=3.8.1
+
+# Database & Environment
+psycopg2-binary>=2.9.9
+dj-database-url>=2.3.0
+python-dotenv>=1.0.1
+
+# Utilities & Excel Export
+openpyxl>=3.1.5
+
+# Web Servers (Production ASGI / WSGI)
+uvicorn>=0.32.0
+gunicorn>=23.0.0
+whitenoise>=6.7.0
