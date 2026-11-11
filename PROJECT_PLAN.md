@@ -134,4 +134,4 @@ rus_mock_exam/
 * [x] **3-BOSQICH (Bajarildi):** Django Admin paneli, filtrlash, rollar (RBAC) va `openpyxl` Excel eksporti (`id raqam, ism, familiya, telefon raqam, maktab nomeri, viloyat, tuman`).
 * [x] **4-BOSQICH (Bajarildi):** aiogram 3 bot va FSM (Ism va Familiya birgalikda, Telefon, Viloyat, Tuman, Maktab ketma-ketligida, `run_bot.py` va `set_webhook.py`, avtotestlar).
 * [x] **5-BOSQICH (Bajarildi):** Webhook (`/webhook/telegram/`), monitoring (`/health/`), xavfsiz zaxiralash buyruqlari (`backup_data.py`, `restore_data.py`, `broadcast_message.py`), `Procfile`, `runtime.txt` va 48 ta to'liq avtotestlar.
-* [ ] **6-BOSQICH (Navbatdagi):** Render Free va Neon Free-ga joylash, UptimeRobot monitoringini sozlash va sinovdan o'tkazish.
+* [x] **6-BOSQICH (Bajarildi):** Render Free va Neon Free-ga muvaffaqiyatli joylandi, Telegram Webhook ulandi, Neon PostgreSQL sinovdan o'tkazildi va UptimeRobot monitoringi tayyorlandi. Loyiha to'liq LIVE holatda!

@@ -169,4 +169,15 @@ Admin panel orqali quyidagi amallarni bajarish mumkin:
 * [x] **3-BOSQICH (Bajarildi):** Django Admin paneli, filtrlash, ro'yxatga olish sig'imini boshqarish, tezkor davomat, rollar (RBAC) va `openpyxl` Excel eksporti.
 * [x] **4-BOSQICH (Bajarildi):** aiogram 3 Telegram boti va FSM ro'yxatga olish jarayoni (Ism va Familiya birgalikda, Telefon, Viloyat, Tuman, Maktab, unikal chipta, `run_bot.py`, `set_webhook.py` va avtotestlar).
 * [x] **5-BOSQICH (Bajarildi):** Webhook (`/webhook/telegram/`), monitoring (`/health/`), xavfsiz zaxira nusxa buyruqlari (`backup_data.py`, `restore_data.py`, `broadcast_message.py`), `Procfile`, `runtime.txt` va 48 ta to'liq avtotestlar.
-* [ ] **6-BOSQICH (Navbatdagi):** Render Free + Neon Free bulutiga joylash, webhook o'rnatish va UptimeRobot monitoringini ulash.
+* [x] **6-BOSQICH (Bajarildi):** Render Free + Neon Free bulutiga muvaffaqiyatli joylandi, Telegram Webhook ulandi, Neon PostgreSQL sinovdan o'tkazildi va jonli efirga (Live) chiqdi!
+
+---
+
+## 9. Jonli Havolalar (Production Links)
+
+* 🌐 **Server (Render):** https://rus-proba-bot.onrender.com
+* 🩺 **Monitoring (Health Check):** https://rus-proba-bot.onrender.com/health/
+* 🔐 **Admin Panel:** https://rus-proba-bot.onrender.com/portal-exam-ctrl-2026/
+  * **Login:** `admin`
+  * **Boshlang'ich parol:** `admin123`
+* 🤖 **Telegram Bot:** @BotFather'dan olingan botingiz (Webhook ulangan, 24/7 ishlaydi)
